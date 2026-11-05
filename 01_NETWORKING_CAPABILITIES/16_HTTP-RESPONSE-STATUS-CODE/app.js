@@ -2,7 +2,7 @@ import http from "node:http";
 
 const server = http.createServer((request, response) => {
   console.log(request.method);
-  response.statusCode = 301;
+  response.statusCode = 301; // automitically attached with reasone phrase....
   response.setHeader("Content-Length", "23");
   response.end("Hello from http server.");
   // request.on("data", (chunk) => {
