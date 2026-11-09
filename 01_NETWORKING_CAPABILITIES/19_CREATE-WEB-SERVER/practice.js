@@ -1,4 +1,4 @@
-import { open } from "node:fs/promises";
+import { createReadStream } from "node:fs";
 import { createServer } from "node:http";
 import { pipeline } from "node:stream/promises";
 
@@ -17,32 +17,27 @@ const routes = {
     file: "script.js",
     type: "text/javascript",
   },
+  "/about.html": {
+    file: "about.html",
+    type: "text/html",
+  },
 };
 
 const server = createServer(async (req, res) => {
   const route = routes[req.url];
 
   if (!route) {
-    res.writeHead(404, {
-      "Content-Type": "text/plain",
-    });
+    res.writeHead(404, { "Content-Type": "text/plain" });
     res.end("404 - Page Not Found");
     return;
   }
 
-  let fileHandle;
-
   try {
-    fileHandle = await open(route.file, "r");
-    res.writeHead(200, {
-      "Content-Type": route.type,
-    });
-
-    await pipeline(fileHandle.createReadStream(), res);
+    const readStream = createReadStream(route.file);
+    // readStream.pipe(res);
+    await pipeline(readStream, res);
   } catch (error) {
-    console.error("Error:", error);
-  } finally {
-    await fileHandle?.close().catch(console.error);
+    console.error("Error: ", error);
   }
 });
 
