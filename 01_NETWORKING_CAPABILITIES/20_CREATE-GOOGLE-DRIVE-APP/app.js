@@ -2,29 +2,30 @@ import { open, readdir, readFile } from "fs/promises";
 import { createServer } from "http";
 
 const server = createServer(async (req, res) => {
-  if (req.url === "/") {
-    const directoryContent = await readdir("./compose");
-    let dynamicContent = "";
-    directoryContent.forEach((content) => {
-      dynamicContent += `<a href='./${content}'>${content}</a><br>`;
-    });
+  async function renderDirectory(dirPath, linkPrefix = "./") {
+    const directoryContent = await readdir(dirPath);
+    const dynamicContent = directoryContent
+      .map((content) => `<a href="${linkPrefix}${content}">${content}</a><br>`)
+      .join("");
 
     const htmlContent = await readFile("./compose/index.html", "utf-8");
-    res.end(htmlContent.replace("${dynamicContent}", dynamicContent));
+    return htmlContent.replace("${dynamicContent}", dynamicContent);
+  }
+
+  if (req.url === "/") {
+    const htmlDynamicContent = await renderDirectory("./compose");
+    res.end(htmlDynamicContent);
   } else {
     try {
       const fileHandle = await open(`./compose${decodeURIComponent(req.url)}`);
       const stats = await fileHandle.stat();
 
       if (stats.isDirectory()) {
-        const directoryContent = await readdir("./compose/images");
-        let dynamicContent = "";
-        directoryContent.forEach((content) => {
-          dynamicContent += `<a href='./images/${content}'>${content}</a><br>`;
-        });
-
-        const htmlContent = await readFile("./compose/index.html", "utf-8");
-        res.end(htmlContent.replace("${dynamicContent}", dynamicContent));
+        const htmlDynamicContent = await renderDirectory(
+          "./compose/images",
+          "./images/",
+        );
+        res.end(htmlDynamicContent);
       } else if (stats.isFile()) {
         const readStream = fileHandle.createReadStream();
         readStream.pipe(res);
