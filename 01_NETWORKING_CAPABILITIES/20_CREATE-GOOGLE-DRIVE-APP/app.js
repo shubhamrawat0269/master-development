@@ -1,4 +1,4 @@
-import { open, readdir } from "fs/promises";
+import { open, readdir, readFile } from "fs/promises";
 import { createServer } from "http";
 
 const server = createServer(async (req, res) => {
@@ -9,26 +9,29 @@ const server = createServer(async (req, res) => {
       dynamicContent += `<a href='./${content}'>${content}</a><br>`;
     });
 
-    res.end(`<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Drive.</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <h1>My Drive.</h1>
-    ${dynamicContent}
-  </body>
-</html>
-`);
+    const htmlContent = await readFile("./compose/index.html", "utf-8");
+    res.end(htmlContent.replace("${dynamicContent}", dynamicContent));
   } else {
     try {
       const fileHandle = await open(`./compose${decodeURIComponent(req.url)}`);
-      const readStream = fileHandle.createReadStream();
+      const stats = await fileHandle.stat();
 
-      readStream.pipe(res);
+      if (stats.isDirectory()) {
+        const directoryContent = await readdir("./compose/images");
+        let dynamicContent = "";
+        directoryContent.forEach((content) => {
+          dynamicContent += `<a href='./images/${content}'>${content}</a><br>`;
+        });
+
+        const htmlContent = await readFile("./compose/index.html", "utf-8");
+        res.end(htmlContent.replace("${dynamicContent}", dynamicContent));
+      } else if (stats.isFile()) {
+        const readStream = fileHandle.createReadStream();
+        readStream.pipe(res);
+      } else {
+        fileHandle.close();
+        res.end("404! Page Not Found.");
+      }
     } catch (error) {
       console.log(`Error : ${error.message}`);
       res.end("404 ! Page Not Found.");
