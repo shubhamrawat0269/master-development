@@ -12,7 +12,7 @@ const server = createServer(async (req, res) => {
     return htmlContent.replace("${dynamicContent}", dynamicContent);
   }
 
-  if (req.url === "/") {
+  if (req.url === "/" || req.url === "/index.html") {
     const htmlDynamicContent = await renderDirectory("./compose");
     res.end(htmlDynamicContent);
   } else {
