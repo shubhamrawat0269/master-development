@@ -5,7 +5,14 @@ const server = createServer(async (req, res) => {
   async function renderDirectory(dirPath, linkPrefix = "./") {
     const directoryContent = await readdir(dirPath);
     const dynamicContent = directoryContent
-      .map((content) => `<a href="${linkPrefix}${content}">${content}</a><br>`)
+      .map(
+        (content) => `
+         <div class='container'>
+          <p>${content}</p>
+          <a href="${linkPrefix}${content}">Preview</a>
+          <a href="${linkPrefix}${content}">Download</a>
+         </div>`,
+      )
       .join("");
 
     const htmlContent = await readFile("./compose/index.html", "utf-8");
