@@ -1,3 +1,4 @@
+import mime from "mime-types";
 import { open } from "node:fs/promises";
 import { createServer } from "node:http";
 import { renderDirectory } from "./helpers/utils.js";
@@ -8,13 +9,30 @@ const server = createServer(async (req, res) => {
     return res.end(dynamicHTMLContent);
   } else {
     try {
-      const fileHandle = await open(`./compose${decodeURIComponent(req.url)}`);
+      const [url, queryParams = ""] = req.url.split("?");
+      const queryList = {};
+      queryParams.split("&").forEach((params) => {
+        const [key, value] = params.split("=");
+        queryList[key] = value;
+      });
+
+      const fileHandle = await open(`./compose${decodeURIComponent(url)}`);
       const stats = await fileHandle.stat();
+
+      res.setHeader("Content-Length", stats.size);
+      res.setHeader("Content-Type", mime.contentType(url.slice(1)));
+
+      if (queryList["action"] == "download") {
+        res.setHeader(
+          "Content-Disposition",
+          `attachment;filename=${url.slice(1)}`,
+        );
+      }
 
       if (stats.isDirectory()) {
         const dynamicHTMLContent = await renderDirectory(
-          `./compose${decodeURIComponent(req.url)}`,
-          `.${decodeURIComponent(req.url)}/`,
+          `./compose${decodeURIComponent(url)}`,
+          `.${decodeURIComponent(url)}/`,
         );
         return res.end(dynamicHTMLContent);
       } else if (stats.isFile()) {

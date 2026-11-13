@@ -7,8 +7,8 @@ export async function renderDirectory(dirPath, linkPrefix = "./") {
       (content) => `
          <div class='container'>
           <p>${content}</p>
-          <a href="${linkPrefix}${content}">Preview</a>
-          <a href="${linkPrefix}${content}">Download</a>
+          <a href="${linkPrefix}${content}?action=preview">Preview</a>
+          <a href="${linkPrefix}${content}?action=download">Download</a>
          </div>`,
     )
     .join("");
