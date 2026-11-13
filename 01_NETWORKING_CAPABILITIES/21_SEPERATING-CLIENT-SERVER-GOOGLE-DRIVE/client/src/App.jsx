@@ -4,16 +4,36 @@ function App() {
   const [data, setData] = useState([]);
 
   async function getData() {
-    const res = await fetch("http://192.168.1.3:4000/");
+    const res = await fetch("http://192.168.1.5:4000/");
     const resInJSON = await res.json();
-    console.log(resInJSON);
     setData(resInJSON);
   }
   useEffect(() => {
     getData();
   }, []);
 
-  return <div>Hello From Client React</div>;
+  return (
+    <div>
+      <h1>Doogle Drive</h1>
+      <div>
+        {data.map((item, id) => {
+          return (
+            <div key={id}>
+              <p>{item}</p>
+              <div>
+                <a href={`http://192.168.1.5:4000/${item}?action=preview`}>
+                  Preview
+                </a>
+                <a href={`http://192.168.1.5:4000/${item}?action=download`}>
+                  Download
+                </a>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export default App;
