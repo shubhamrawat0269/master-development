@@ -5,11 +5,8 @@ import { renderDirectory } from "./helpers/utils.js";
 import { createWriteStream } from "node:fs";
 
 const server = createServer(async (req, res) => {
-  console.log(req.method);
-
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "*");
-
 
   if (req.method === "GET") {
     if (req.url == "/") {
@@ -56,11 +53,11 @@ const server = createServer(async (req, res) => {
         res.end("Error Occured");
       }
     }
+  } else if (req.method === "OPTIONS") {
+    res.end("OK");
   } else if (req.method === "POST") {
-    req.on("data", (chunk) => {
-      const writeStream = createWriteStream("new-file.txt");
-      writeStream.write(chunk.toString());
-    });
+    const writeStream = createWriteStream(`./compose/${req.headers.filename}`);
+    req.pipe(writeStream);
 
     req.on("end", () => {
       res.end("File Uploaded Successfully");
