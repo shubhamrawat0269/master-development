@@ -7,6 +7,9 @@ inputEle.addEventListener("change", async (e) => {
   const response = await fetch("http://192.168.1.5:4000/", {
     method: "POST",
     body: fileDetails,
+    headers: {
+      filename: fileDetails.name,
+    },
   });
 
   const actualData = await response.text();
