@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 function App() {
   const [data, setData] = useState([]);
   const [progress, setProgress] = useState(0);
+  const [newFileName, setNewFileName] = useState("");
 
   async function getData() {
     const res = await fetch("http://192.168.1.5:4000/");
@@ -20,10 +21,19 @@ function App() {
     xhr.open("POST", "http://192.168.1.5:4000/", true);
     xhr.setRequestHeader("filename", fileDetails.name);
 
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        setProgress(100);
+        getData();
+      } else {
+        console.error("Upload failed:", xhr.status);
+      }
+    };
+
     xhr.upload.onprogress = function (event) {
       if (event.lengthComputable) {
         const progress = Math.round((event.loaded / event.total) * 100);
-        console.log(`Upload Progress: ${progress}%`);
+        // console.log(`Upload Progress: ${progress}%`);
         setProgress(progress);
       }
     };
@@ -42,10 +52,32 @@ function App() {
     console.log(actualData);
   }
 
+  function onRenameFile(oldFileName) {
+    setNewFileName(oldFileName);
+  }
+
+  async function onSaveFile(oldFileName) {
+    console.log({ oldFileName, newFileName });
+
+    const response = await fetch("http://192.168.1.5:4000/", {
+      method: "PATCH",
+      body: JSON.stringify({ oldFileName, newFileName }),
+    });
+
+    const actualData = await response.text();
+    getData();
+    console.log(actualData);
+  }
+
   return (
     <div>
       <h1>Doogle Drive</h1>
       <input type="file" onChange={handleFileChange} />
+      <input
+        type="text"
+        value={newFileName}
+        onChange={(e) => setNewFileName(e.target.value)}
+      />
       <div>{`${progress}%`}</div>
       <div>
         {data.map((item, id) => {
@@ -60,6 +92,8 @@ function App() {
                   Download
                 </a>
                 <button onClick={() => handleDeleteFile(item)}>Delete</button>
+                <button onClick={() => onRenameFile(item)}>Rename</button>
+                <button onClick={() => onSaveFile(item)}>Save</button>
               </div>
             </div>
           );

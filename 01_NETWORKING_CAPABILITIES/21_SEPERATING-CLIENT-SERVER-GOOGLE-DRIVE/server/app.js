@@ -1,5 +1,5 @@
 import mime from "mime-types";
-import { open, rm } from "node:fs/promises";
+import { open, rename, rm } from "node:fs/promises";
 import { createServer } from "node:http";
 import { renderDirectory } from "./helpers/utils.js";
 import { createWriteStream } from "node:fs";
@@ -70,6 +70,12 @@ const server = createServer(async (req, res) => {
 
     req.on("end", () => {
       res.end("File deleted successfully");
+    });
+  } else if (req.method === "PATCH") {
+    req.on("data", async (data) => {
+      const { oldFileName, newFileName } = JSON.parse(data);
+      await rename(`./compose/${oldFileName}`, `./compose/${newFileName}`);
+      res.end("File Edited Successfully");
     });
   }
 });
