@@ -1,0 +1,9 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+p {
+  margin: 0.2rem;
+}
