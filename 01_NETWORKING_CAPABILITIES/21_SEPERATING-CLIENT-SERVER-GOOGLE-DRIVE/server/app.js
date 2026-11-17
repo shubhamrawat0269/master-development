@@ -1,5 +1,5 @@
 import mime from "mime-types";
-import { open } from "node:fs/promises";
+import { open, rm } from "node:fs/promises";
 import { createServer } from "node:http";
 import { renderDirectory } from "./helpers/utils.js";
 import { createWriteStream } from "node:fs";
@@ -7,6 +7,7 @@ import { createWriteStream } from "node:fs";
 const server = createServer(async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "*");
+  res.setHeader("Access-Control-Allow-Methods", "*");
 
   if (req.method === "GET") {
     if (req.url == "/") {
@@ -61,6 +62,14 @@ const server = createServer(async (req, res) => {
 
     req.on("end", () => {
       res.end("File Uploaded Successfully");
+    });
+  } else if (req.method === "DELETE") {
+    req.on("data", async (filename) => {
+      await rm(`./compose/${filename}`);
+    });
+
+    req.on("end", () => {
+      res.end("File deleted successfully");
     });
   }
 });
