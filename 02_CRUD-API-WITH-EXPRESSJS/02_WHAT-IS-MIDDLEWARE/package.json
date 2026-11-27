@@ -1,0 +1,16 @@
+{
+  "name": "02_what-is-middleware",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Middleware content",
+  "main": "app.js",
+  "scripts": {
+    "dev": "node --watch app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.3.0"
+  }
+}
